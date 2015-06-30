@@ -11,10 +11,13 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"encoding/base64"
+	"encoding/binary"
+	"math/big"
 )
 
 const (
-	MODULI_BASE = 16 // Hex
+	MODULI_BASE = 10 // Hex
 	GCCOUNT     = 250000
 )
 
@@ -69,7 +72,9 @@ func main() {
 		if !compromised.Test() {
 			log.Fatal("Test failed on ", compromised)
 		}
-		fmt.Println(compromised.Csv())
+		log.Print(compromised)
+
+		// fmt.Println(compromised.Csv())
 	}
 	log.Print("Finished.")
 }
@@ -120,6 +125,7 @@ func readModuli(ch chan *gmp.Int, filename string) {
 	var count uint64
 	seen := make(map[string]struct{})
 	scanner := bufio.NewScanner(fp)
+	log.Print("Reading ")
 	for scanner.Scan() {
 		count += 1
 		if count%GCCOUNT == 0 {
@@ -137,12 +143,39 @@ func readModuli(ch chan *gmp.Int, filename string) {
 		} else {
 			seen[s] = struct{}{}
 		}
+		data, _ := base64.StdEncoding.DecodeString(s)
 
-		if _, ok := m.SetString(s, MODULI_BASE); !ok {
-			log.Fatal("Invalid modulus in filename ", filename, ": ", scanner.Text())
-		}
+		i := 0
+		chunk, i := read_chunk(data, i)
+
+		chunk, i = read_chunk(data, i)
+		// e := unpack_bigint(chunk)
+
+		chunk, i = read_chunk(data, i)
+		n := chunk
+
+		m.SetBytes(n)
 		ch <- m
 	}
+}
+
+func read_chunk(buffer []byte, i int) ([]byte, int) {
+	length, start := read_int(buffer, i)
+	s := buffer[start:start+length]
+	return s, start + length;
+}
+
+func unpack_bigint(buffer []byte) (*big.Int) {
+	b := big.NewInt(0)
+	b.SetBytes(buffer)
+	return b
+}
+
+func read_int(data []byte, start int) (int, int) {
+	end := start + 4
+	b := data[start:end]
+	noBytes := binary.BigEndian.Uint32(b)
+	return int(noBytes) , end;
 }
 
 func uniqifyCollisions(in <-chan batchgcd.Collision) chan batchgcd.Collision {

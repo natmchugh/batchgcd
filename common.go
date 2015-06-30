@@ -18,9 +18,9 @@ func (x Collision) HavePrivate() bool {
 func (x Collision) String() string {
 	if x.HavePrivate() {
 		if x.P.Cmp(x.Q) < 0 {
-			return fmt.Sprintf("COLLISION: N=%x P=%x Q=%x", x.Modulus, x.P, x.Q)
+			return fmt.Sprintf("COLLISION: N=%x \nP=%x \nQ=%x", x.Modulus, x.P, x.Q)
 		} else {
-			return fmt.Sprintf("COLLISION: N=%x P=%x Q=%x", x.Modulus, x.Q, x.P)
+			return fmt.Sprintf("COLLISION: N=%x \nP=%x \nQ=%x", x.Modulus, x.Q, x.P)
 		}
 	} else {
 		return fmt.Sprintf("DUPLICATE: %x", x.Modulus)
