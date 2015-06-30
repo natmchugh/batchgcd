@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/ncw/gmp"
-	"github.com/therealmik/batchgcd"
+	"github.com/natmchugh/batchgcd"
 	"log"
 	"os"
 	"runtime"
